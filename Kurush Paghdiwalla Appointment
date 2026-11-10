@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dr. Kurush Paghdiwalla - Online Appointment Booking</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:#f5f7fa;
+margin:0;
+padding:0;
+}
+
+header{
+background:#0a4d8c;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+label{
+display:block;
+margin-top:12px;
+font-weight:bold;
+}
+
+input,select,textarea{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+button{
+margin-top:15px;
+padding:12px 20px;
+background:#0a4d8c;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{
+background:#083765;
+}
+
+.slot{
+display:inline-block;
+padding:10px;
+margin:5px;
+background:#dff0ff;
+border-radius:8px;
+cursor:pointer;
+}
+
+.slot:hover{
+background:#a4d4ff;
+}
+
+.selected{
+background:#4caf50;
+color:white;
+}
+
+.fees{
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+}
+
+.fee-box{
+background:#eaf4ff;
+padding:15px;
+border-radius:10px;
+flex:1;
+min-width:200px;
+text-align:center;
+}
+
+.success{
+background:#d4edda;
+padding:15px;
+border-radius:8px;
+margin-top:20px;
+display:none;
+}
+
+.admin{
+background:#fff3cd;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Dr. Kurush Paghdiwalla</h1>
+<p>Online Appointment Booking</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+<h2>Consultation Fees</h2>
+
+<div class="fees">
+<div class="fee-box">
+<h3>New Consultation</h3>
+<p><strong>₹ 2,000</strong></p>
+</div>
+
+<div class="fee-box">
+<h3>Follow-up Consultation</h3>
+<p><strong>₹ 1,000</strong></p>
+</div>
+</div>
+</div>
+
+<div class="card">
+
+<h2>Book Appointment</h2>
+
+<label>Clinic Location</label>
+
+<select id="clinic">
+<option value="chowpatty">Chowpatty Medical Centre</option>
+<option value="breach">Breach Candy Hospital</option>
+<option value="hn">Sir H. N. Reliance Hospital</option>
+</select>
+
+<label>Appointment Type</label>
+
+<select id="appointmentType">
+<option value="20">New Patient (20 mins)</option>
+<option value="10">Follow-up Patient (10 mins)</option>
+</select>
+
+<label>Select Date</label>
+<input type="date" id="appointmentDate">
+
+<div id="slots"></div>
+
+<label>Patient Name</label>
+<input type="text" id="name">
+
+<label>Mobile Number</label>
+<input type="tel" id="mobile">
+
+<label>Email</label>
+<input type="email" id="email">
+
+<label>Reason for Visit</label>
+<textarea id="reason"></textarea>
+
+<button onclick="bookAppointment()">
+Confirm Appointment
+</button>
+
+<div id="success" class="success">
+Appointment Request Submitted Successfully.
+</div>
+
+</div>
+
+<div class="card admin">
+
+<h2>Admin - Block Holidays</h2>
+
+<input type="date" id="holidayDate">
+
+<button onclick="addHoliday()">
+Add Holiday
+</button>
+
+<ul id="holidayList"></ul>
+
+</div>
+
+</div>
+
+<script>
+
+let selectedSlot = "";
+
+let holidays = [];
+
+const schedules = {
+
+chowpatty:{
+start:"13:30",
+end:"16:30"
+},
+
+breach:{
+start:"18:00",
+end:"20:00"
+},
+
+hn:{
+start:"14:00",
+end:"16:00"
+}
+
+};
+
+function generateSlots(){
+
+let clinic =
+document.getElementById("clinic").value;
+
+let duration =
+parseInt(
+document.getElementById("appointmentType").value
+);
+
+let container =
+document.getElementById("slots");
+
+container.innerHTML="";
+
+let start =
+schedules[clinic].start;
+
+let end =
+schedules[clinic].end;
+
+let startParts =
+start.split(":");
+
+let endParts =
+end.split(":");
+
+let startMinutes =
+parseInt(startParts[0])*60 +
+parseInt(startParts[1]);
+
+let endMinutes =
+parseInt(endParts[0])*60 +
+parseInt(endParts[1]);
+
+for(
+let t=startMinutes;
+t<endMinutes;
+t+=duration
+){
+
+let h=Math.floor(t/60);
+let m=t%60;
+
+let time=
+String(h).padStart(2,'0')
++
+":"
++
+String(m).padStart(2,'0');
+
+let div=document.createElement("div");
+
+div.className="slot";
+
+div.innerHTML=time;
+
+div.onclick=function(){
+
+document
+.querySelectorAll(".slot")
+.forEach(
+s=>s.classList.remove("selected")
+);
+
+this.classList.add("selected");
+
+selectedSlot=time;
+};
+
+container.appendChild(div);
+}
+}
+
+function bookAppointment(){
+
+if(!selectedSlot){
+alert("Please select a time slot");
+return;
+}
+
+document.getElementById(
+"success"
+).style.display="block";
+}
+
+function addHoliday(){
+
+let date =
+document.getElementById(
+"holidayDate"
+).value;
+
+holidays.push(date);
+
+renderHolidays();
+}
+
+function renderHolidays(){
+
+let ul =
+document.getElementById(
+"holidayList"
+);
+
+ul.innerHTML="";
+
+holidays.forEach(h=>{
+
+let li =
+document.createElement("li");
+
+li.innerText=h;
+
+ul.appendChild(li);
+
+});
+}
+
+document
+.getElementById("clinic")
+.addEventListener(
+"change",
+generateSlots
+);
+
+document
+.getElementById("appointmentType")
+.addEventListener(
+"change",
+generateSlots
+);
+
+generateSlots();
+
+</script>
+
+</body>
+</html>
